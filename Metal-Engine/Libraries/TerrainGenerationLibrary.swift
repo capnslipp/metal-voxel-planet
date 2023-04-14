@@ -40,14 +40,16 @@ protocol TerrainGenerator: AnyObject {
 class BasicTerrainGenerator: TerrainGenerator {
     let seed: Int
     let noise: GradientNoise2D
+    let noisePeriod: Double = 20
     
     init(seed: Int) {
         self.seed = seed
-        self.noise = GradientNoise2D(amplitude: 4, frequency: 0.05, seed: seed)
+        self.noise = GradientNoise2D(amplitude: 4, frequency: (1.0 / self.noisePeriod), seed: seed)
     }
     
     func getApproxHeight(position: Position) -> Float {
-        return Float(7 + self.noise.evaluate(Double(position.x), Double(position.z)))
+        let modulus:(Double, Double)->Double = { $0.truncatingRemainder(dividingBy: $1) }
+        return Float(7 + self.noise.evaluate(modulus(Double(position.x), noisePeriod), modulus(Double(position.z), noisePeriod)))
     }
     
     func getVoxelTerrain(position: Position3D)->VoxelType {
